@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For you</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Montserrat:wght@300;400;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            cursor: none;
+        }
+
+        /* Curseur personnalisé avec particules */
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            transition: transform 0.1s ease;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-trail {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, rgba(255, 107, 157, 1) 0%, rgba(255, 107, 157, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            animation: sparkle 1s ease-out forwards;
+        }
+
+        @keyframes sparkle {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Arrière-plans animés pour chaque écran */
+        .bg-password {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        .bg-puzzle {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 50%, #fa709a 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 20s ease infinite;
+        }
+
+        .bg-question {
+            background: linear-gradient(135deg, #ff6b9d 0%, #ffc3d7 50%, #c471f5 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 18s ease infinite;
+        }
+
+        .bg-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 50%, #11998e 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 22s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Particules d'arrière-plan animées */
+        .background-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float-particle 20s infinite;
+        }
+
+        @keyframes float-particle {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        /* Container principal */
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 50px;
+            border-radius: 30px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            max-height: 90vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* Scrollbar personnalisée */
+        .container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: rgba(255, 107, 157, 0.1);
+            border-radius: 10px;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #ff6b9d, #ff1744);
+            border-radius: 10px;
+        }
+
+        .container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #ff1744, #ff6b9d);
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeInScale 0.5s ease-out;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* ===== ÉCRAN MOT DE PASSE ===== */
+        .lock-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 36px;
+            font-weight: 900;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+            font-weight: 300;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 18px;
+            font-size: 20px;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            transition: all 0.3s;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 5px;
+        }
+
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+            transform: scale(1.02);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 18px 45px;
+            font-size: 18px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 700;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .error-message {
+            color: #f44336;
+            margin-top: 15px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-15px); }
+            75% { transform: translateX(15px); }
+        }
+
+        /* ===== PUZZLE DE COEURS ===== */
+        .puzzle-container {
+            margin: 30px 0;
+        }
+
+        .puzzle-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            max-width: 400px;
+            margin: 30px auto;
+        }
+
+        .puzzle-piece {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #fa709a, #fee140);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .puzzle-piece:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 10px 30px rgba(250, 112, 154, 0.5);
+        }
+
+        .puzzle-piece.selected {
+            border-color: #fff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            animation: glow 1s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); }
+            50% { box-shadow: 0 0 30px rgba(255, 255, 255, 1); }
+        }
+
+        .puzzle-message {
+            font-family: 'Great Vibes', cursive;
+            font-size: 24px;
+            color: #fa709a;
+            margin-top: 20px;
+            min-height: 30px;
+        }
+
+        /* ===== ÉCRAN QUESTION ===== */
+        .heart-icon {
+            font-size: 100px;
+            margin-bottom: 20px;
+            animation: heartbeat 1.5s infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            10%, 30% { transform: scale(0.9); }
+            20%, 40% { transform: scale(1.15); }
+        }
+
+        .question {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px;
+            color: #ff1744;
+            margin-bottom: 40px;
+            font-weight: 700;
+        }
+
+        .buttons-container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 40px;
+            position: relative;
+            min-height: 200px;
+        }
+
+        .btn {
+            border: none;
+            padding: 25px 50px;
+            font-size: 28px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s;
+            position: absolute;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .btn-yes {
+            background: linear-gradient(135deg, #4caf50, #81c784);
+            color: white;
+            z-index: 5;
+            left: 50%;
+            transform: translateX(-150px);
+        }
+
+        .btn-yes:hover {
+            transform: translateX(-150px) scale(1.1);
+            box-shadow: 0 10px 40px rgba(76, 175, 80, 0.5);
+        }
+
+        .btn-no {
+            background: linear-gradient(135deg, #f44336, #e57373);
+            color: white;
+            z-index: 4;
+            right: 50%;
+            transform: translateX(150px);
+            transition: all 0.2s ease-out;
+        }
+
+        .insistence-message {
+            margin-top: 20px;
+            font-size: 20px;
+            color: #ff1744;
+            font-weight: 600;
+            min-height: 35px;
+            animation: fadeIn 0.5s;
+            font-family: 'Great Vibes', cursive;
+            font-size: 28px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== ÉCRAN SUCCÈS ===== */
+        .success-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            color: #11998e;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+
+        .valentine-message {
+            font-family: 'Great Vibes', cursive;
+            font-size: 48px;
+            color: #ff1744;
+            margin: 30px 0;
+        }
+
+        .name-display {
+            font-family: 'Playfair Display', serif;
+            font-size: 56px;
+            color: #ff6b9d;
+            font-weight: 900;
+            margin: 30px 0;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ===== BOÎTE DE TIRAGE ===== */
+        .draw-box-container {
+            margin: 30px auto;
+            position: relative;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .draw-box {
+            background: linear-gradient(135deg, #ff6b9d, #ffc3d7);
+            border-radius: 30px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 60px rgba(255, 107, 157, 0.4);
+            position: relative;
+            overflow: visible;
+        }
+
+        .draw-box::before {
+            content: '✨';
+            position: absolute;
+            font-size: 60px;
+            opacity: 0.2;
+            top: -10px;
+            left: -10px;
+            animation: float 3s infinite;
+        }
+
+        .draw-box::after {
+            content: '💕';
+            position: absolute;
+            font-size: 60px;
+            opacity: 0.2;
+            bottom: -10px;
+            right: -10px;
+            animation: float 3s infinite 1.5s;
+        }
+
+        .box-lid {
+            background: linear-gradient(135deg, #ff1744, #ff6b9d);
+            height: 70px;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin-bottom: 20px;
+            transition: transform 0.5s ease;
+        }
+
+        .box-lid.open {
+            transform: translateY(-20px) rotateX(-20deg);
+        }
+
+        .box-slot {
+            background: rgba(255, 255, 255, 0.3);
+            border: 3px dashed white;
+            border-radius: 15px;
+            padding: 60px 30px;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .message-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(0);
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: absolute;
+            max-width: 90%;
+            width: auto;
+        }
+
+        .message-card.reveal {
+            opacity: 1;
+            transform: translateY(-20px);
+            animation: cardFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes cardFloat {
+            0%, 100% { transform: translateY(-20px); }
+            50% { transform: translateY(-30px); }
+        }
+
+        .message-card-icon {
+            font-size: 45px;
+            margin-bottom: 12px;
+        }
+
+        .message-card-text {
+            font-family: 'Great Vibes', cursive;
+            font-size: 24px;
+            color: #ff1744;
+            line-height: 1.4;
+        }
+
+        .draw-button {
+            background: linear-gradient(135deg, #ff6b9d, #ff1744);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 700;
+            margin-top: 25px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(255, 23, 68, 0.3);
+        }
+
+        .draw-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.5);
+        }
+
+        .draw-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .draw-counter {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #ff1744;
+            font-weight: 600;
+        }
+
+        /* Popup pour les messages de la roue */
+        .message-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            padding: 40px 50px;
+            border-radius: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            z-index: 10000;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            opacity: 0;
+        }
+
+        .message-popup::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .message-popup::-webkit-scrollbar-track {
+            background: rgba(255, 107, 157, 0.1);
+            border-radius: 10px;
+        }
+
+        .message-popup::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #ff6b9d, #ff1744);
+            border-radius: 10px;
+        }
+
+        .message-popup.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .message-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            display: none;
+        }
+
+        .message-popup-overlay.show {
+            display: block;
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ff1744;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .popup-close:hover {
+            background: #d32f2f;
+            transform: rotate(90deg);
+        }
+
+        .popup-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .popup-message {
+            font-family: 'Great Vibes', cursive;
+            font-size: 36px;
+            color: #ff1744;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .popup-counter {
+            font-size: 16px;
+            color: #666;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+
+        /* ===== TICKET RESTAURANT ===== */
+        .ticket-container {
+            margin: 40px auto;
+            max-width: 500px;
+        }
+
+        .ticket {
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            border: 3px dashed #d63031;
+            border-radius: 20px;
+            padding: 40px;
+            position: relative;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+            animation: ticketAppear 0.8s ease-out;
+        }
+
+        @keyframes ticketAppear {
+            from {
+                opacity: 0;
+                transform: translateY(50px) rotate(-5deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) rotate(0deg);
+            }
+        }
+
+        .ticket::before,
+        .ticket::after {
+            content: '✂';
+            position: absolute;
+            font-size: 24px;
+            color: #d63031;
+        }
+
+        .ticket::before {
+            top: 20px;
+            left: -15px;
+        }
+
+        .ticket::after {
+            top: 20px;
+            right: -15px;
+        }
+
+        .ticket-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            color: #d63031;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+
+        .ticket-code {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            margin: 20px 0;
+            border: 2px dashed #d63031;
+        }
+
+        .ticket-details {
+            text-align: left;
+            margin-top: 25px;
+            line-height: 1.8;
+            color: #2d3436;
+        }
+
+        .ticket-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .ticket-note {
+            margin-top: 25px;
+            font-style: italic;
+            color: #636e72;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .next-button {
+            background: linear-gradient(135deg, #ff6b9d, #ff1744);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 700;
+            margin-top: 30px;
+            transition: all 0.3s;
+        }
+
+        .next-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.5);
+        }
+
+        /* Confettis */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #ff1744;
+            top: -10px;
+            animation: confetti-fall 3s linear;
+            opacity: 0;
+            z-index: 9999;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 1;
+            }
+        }
+
+        /* Audio control */
+        .audio-control {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .audio-control:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+                max-height: 85vh;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .question {
+                font-size: 28px;
+            }
+
+            .draw-box-container {
+                max-width: 100%;
+            }
+
+            .draw-box {
+                padding: 30px 20px;
+            }
+
+            .box-slot {
+                padding: 60px 20px;
+                min-height: 180px;
+            }
+
+            .btn {
+                padding: 18px 30px;
+                font-size: 20px;
+            }
+
+            .message-popup {
+                padding: 30px 25px;
+                width: 95%;
+                max-height: 70vh;
+            }
+
+            .popup-message {
+                font-size: 28px;
+            }
+
+            .ticket {
+                padding: 30px 20px;
+            }
+
+            .ticket-title {
+                font-size: 24px;
+            }
+
+            .ticket-code {
+                font-size: 18px;
+            }
+
+            .message-card-text {
+                font-size: 22px;
+            }
+
+            .draw-button {
+                padding: 15px 35px;
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px 15px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .subtitle {
+                font-size: 14px;
+            }
+
+            .question {
+                font-size: 24px;
+            }
+
+            .puzzle-grid {
+                gap: 10px;
+                max-width: 300px;
+            }
+
+            .puzzle-piece {
+                font-size: 32px;
+            }
+
+            .box-lid {
+                height: 60px;
+                font-size: 32px;
+            }
+
+            .message-popup {
+                padding: 25px 20px;
+            }
+
+            .popup-icon {
+                font-size: 45px;
+            }
+
+            .popup-message {
+                font-size: 24px;
+            }
+
+            input[type="password"] {
+                font-size: 18px;
+                padding: 15px;
+            }
+
+            .btn-primary {
+                padding: 15px 35px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .container {
+                max-height: 95vh;
+                padding: 30px 20px;
+            }
+
+            .heart-icon {
+                font-size: 70px;
+            }
+
+            .lock-icon {
+                font-size: 60px;
+            }
+
+            .box-slot {
+                min-height: 150px;
+                padding: 50px 30px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-password">
+    <!-- Curseur personnalisé -->
+    <div class="custom-cursor"></div>
+
+    <!-- Particules d'arrière-plan -->
+    <div class="background-particles" id="backgroundParticles"></div>
+
+    <!-- Contrôle audio -->
+    <button class="audio-control" id="audioControl" onclick="toggleAudio()">🔇</button>
+    
+    <!-- Audio - Perfect by Ed Sheeran -->
+    <audio id="bgMusic" loop>
+        <source src="Perfect.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="container">
+        <!-- ===== ÉCRAN 1: MOT DE PASSE ===== -->
+        <div class="screen active" id="passwordScreen">
+            <div class="lock-icon">🔒</div>
+            <h1>Message Protégé</h1>
+            <p class="subtitle">Un message spécial t'attend... 💝</p>
+            <input type="password" id="passwordInput" placeholder="Code Secret" maxlength="6">
+            <button class="btn-primary" onclick="checkPassword()">Déverrouiller</button>
+            <p class="error-message" id="errorMessage">❌ Code incorrect, réessaie !</p>
+        </div>
+
+        <!-- ===== ÉCRAN 2: PUZZLE DE COEURS ===== -->
+        <div class="screen" id="puzzleScreen">
+            <h1>🧩 Puzzle de Coeurs</h1>
+            <p class="subtitle">Trouve les 4 coeurs dans le bon ordre pour continuer</p>
+            <div class="puzzle-container">
+                <div class="puzzle-grid" id="puzzleGrid"></div>
+                <div class="puzzle-message" id="puzzleMessage">Clique sur les coeurs dans l'ordre ❤️</div>
+            </div>
+        </div>
+
+        <!-- ===== ÉCRAN 3: QUESTION ===== -->
+        <div class="screen" id="questionScreen">
+            <div class="heart-icon">💖</div>
+            <div class="question">Veux-tu être ma Valentine ?</div>
+            <div class="buttons-container">
+                <button class="btn btn-yes" id="yesBtn" onclick="sayYes()">Oui 💕</button>
+                <button class="btn btn-no" id="noBtn" onmouseover="runAway(event)" onclick="runAway(event)">Non</button>
+            </div>
+            <div class="insistence-message" id="insistenceMessage"></div>
+        </div>
+
+        <!-- ===== ÉCRAN 4: SUCCÈS ===== -->
+        <div class="screen" id="successScreen">
+            <div style="font-size: 100px; margin-bottom: 20px;">🎉</div>
+            <div class="success-title">Je savais que tu dirais oui !</div>
+            <div class="valentine-message">Joyeuse Saint-Valentin</div>
+            <div class="name-display">Chancellia</div>
+            <button class="next-button" onclick="showWheel()">Découvre ta surprise ! 🎁</button>
+        </div>
+
+        <!-- ===== ÉCRAN 5: BOÎTE DE TIRAGE ===== -->
+        <div class="screen" id="wheelScreen">
+            <h1>🎁 Boîte à Messages </h1>
+            <p class="subtitle">Tire un message pour découvrir une douce surprise !</p>
+            <div class="draw-box-container">
+                <div class="draw-box">
+                    <div class="box-lid" id="boxLid">🎀</div>
+                    <div class="box-slot" id="boxSlot">
+                        <div style="font-size: 40px; opacity: 0.5;">Tire un message ! 💌</div>
+                    </div>
+                </div>
+            </div>
+            <button class="draw-button" id="drawButton" onclick="drawMessage()">Tirer un message 💝</button>
+            <div class="draw-counter" id="drawCounter">Aucun message tiré</div>
+            <button class="next-button" id="giftButton" onclick="showTicket()" style="display: none;">Recevoir mon cadeau 🎁</button>
+        </div>
+
+        <!-- ===== ÉCRAN 6: TICKET RESTAURANT ===== -->
+        <div class="screen" id="ticketScreen">
+            <h1>🎟️ Ton Cadeau Spécial</h1>
+            <div class="ticket-container">
+                <div class="ticket">
+                    <div class="ticket-title">💝 BON CADEAU 💝</div>
+                    <div style="font-size: 48px; margin: 20px 0;">🍽️</div>
+                    <div style="font-size: 24px; font-weight: 700; color: #d63031; margin-bottom: 15px;">
+                        Dîner Romantique pour Deux
+                    </div>
+                    <div class="ticket-code">VAL-2026-AMOR</div>
+                    <div class="ticket-details">
+                        <div class="ticket-detail">
+                            <span>📅 Valable:</span>
+                            <span>2 mois (jusqu'au 14 Avril 2026)</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <span>👥 Personnes:</span>
+                            <span>2 personnes</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <span>🌟 Type:</span>
+                            <span>Restaurant au choix</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <span>💰 Valeur:</span>
+                            <span>Moment inoubliable</span>
+                        </div>
+                    </div>
+                    <div class="ticket-note">
+                        ✨ Ce ticket est la promesse d'un moment magique ensemble.<br>
+                        Prépare-toi pour une soirée dont tu te souviendras ! 💕
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 40px; font-size: 24px; color: #11998e; font-weight: 700;">
+                Joyeuse Saint-Valentin, Chancellia ! 💝✨
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup pour afficher les messages de la roue -->
+    <div class="message-popup-overlay" id="popupOverlay" onclick="closePopup()"></div>
+    <div class="message-popup" id="messagePopup">
+        <button class="popup-close" onclick="closePopup()">✕</button>
+        <div class="popup-icon">💝</div>
+        <div class="popup-message" id="popupMessage"></div>
+        <div class="popup-counter" id="popupCounter"></div>
+    </div>
+
+    <script>
+        const correctPassword = "130865";
+        let noClickCount = 0;
+        let yesButtonScale = 1;
+        let mouseX = 0;
+        let mouseY = 0;
+        let audioPlaying = false;
+        let audioContext = null;
+
+        const insistenceMessages = [
+            "Tu es sûr(e) ? 🥺",
+            "Vraiment ? Le OUI est si tentant ! 💕",
+            "Allez, dis oui ! 😊",
+            "Le bouton OUI grandit pour toi ! 💖",
+            "Tu sais que tu veux dire oui 😉",
+            "Encore un petit effort... vers le OUI ! ✨",
+            "Le OUI t'attend les bras ouverts ! 🤗",
+            "Tu ne peux pas résister au OUI ! 💝",
+            "C'est tellement évident ! 😄",
+            "OUI OUI OUI ! 🎉"
+        ];
+
+        const wheelMessages = [
+            "Tu illumines mes journées ☀️",
+            "Chaque moment avec toi est précieux 💎",
+            "Tu es ma personne préférée 🌟",
+            "Mon cœur bat pour toi 💓",
+            "Tu rends tout meilleur 🌈",
+            "Avec toi, je suis complet(e) 🧩",
+            "Tu es mon bonheur quotidien 😊",
+            "Je t'aime plus chaque jour 💕"
+        ];
+
+        // Créer les particules d'arrière-plan
+        function createBackgroundParticles() {
+            const container = document.getElementById('backgroundParticles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.width = Math.random() * 4 + 2 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+                particle.style.setProperty('--ty', (Math.random() - 0.5) * 200 + 'px');
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Curseur personnalisé avec traînée scintillante
+        const cursor = document.querySelector('.custom-cursor');
+        let lastTrailTime = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+
+            // Créer une traînée scintillante
+            const currentTime = Date.now();
+            if (currentTime - lastTrailTime > 30) {
+                createCursorTrail(e.clientX, e.clientY);
+                lastTrailTime = currentTime;
+            }
+        });
+
+        function createCursorTrail(x, y) {
+            const trail = document.createElement('div');
+            trail.className = 'cursor-trail';
+            trail.style.left = x + 'px';
+            trail.style.top = y + 'px';
+            document.body.appendChild(trail);
+
+            setTimeout(() => trail.remove(), 1000);
+        }
+
+        // Contrôle audio
+        function toggleAudio() {
+            const audio = document.getElementById('bgMusic');
+            const control = document.getElementById('audioControl');
+            
+            if (audioPlaying) {
+                audio.pause();
+                control.textContent = '🔇';
+                audioPlaying = false;
+            } else {
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        control.textContent = '🔊';
+                        audioPlaying = true;
+                    }).catch(error => {
+                        console.log('Lecture audio:', error);
+                    });
+                }
+            }
+        }
+
+        // Démarrer la musique au premier clic
+        let firstInteraction = true;
+        document.addEventListener('click', function() {
+            if (firstInteraction && !audioPlaying) {
+                const audio = document.getElementById('bgMusic');
+                audio.play().then(() => {
+                    document.getElementById('audioControl').textContent = '🔊';
+                    audioPlaying = true;
+                }).catch(() => {});
+                firstInteraction = false;
+            }
+        });
+
+        // Changer l'arrière-plan selon l'écran
+        function changeBackground(className) {
+            document.body.className = className;
+        }
+
+        // Vérifier le mot de passe
+        function checkPassword() {
+            const input = document.getElementById('passwordInput');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (input.value === correctPassword) {
+                switchScreen('passwordScreen', 'puzzleScreen');
+                changeBackground('bg-puzzle');
+                input.value = '';
+                initPuzzle();
+            } else {
+                errorMessage.classList.add('show');
+                input.value = '';
+                setTimeout(() => {
+                    errorMessage.classList.remove('show');
+                }, 2000);
+            }
+        }
+
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkPassword();
+        });
+
+        // Initialiser le puzzle
+        let puzzleSequence = [];
+        let userSequence = [];
+        const correctSequence = [0, 1, 2, 3]; // Positions des coeurs
+
+        function initPuzzle() {
+            const grid = document.getElementById('puzzleGrid');
+            grid.innerHTML = '';
+            puzzleSequence = [];
+            userSequence = [];
+
+            const items = ['💖', '🌟', '💖', '✨', '💖', '⭐', '💖', '💫', '🌙'];
+            
+            items.forEach((item, index) => {
+                const piece = document.createElement('div');
+                piece.className = 'puzzle-piece';
+                piece.textContent = item;
+                piece.dataset.index = index;
+                
+                if (item === '💖') {
+                    puzzleSequence.push(index);
+                    piece.onclick = () => selectPuzzlePiece(index, piece);
+                }
+                
+                grid.appendChild(piece);
+            });
+        }
+
+        function selectPuzzlePiece(index, element) {
+            if (userSequence.includes(index)) return;
+
+            userSequence.push(index);
+            element.classList.add('selected');
+
+            const message = document.getElementById('puzzleMessage');
+            
+            if (userSequence.length === 4) {
+                if (JSON.stringify(userSequence) === JSON.stringify(puzzleSequence)) {
+                    message.textContent = '🎉 Parfait ! Accès déverrouillé !';
+                    setTimeout(() => {
+                        switchScreen('puzzleScreen', 'questionScreen');
+                        changeBackground('bg-question');
+                    }, 1500);
+                } else {
+                    message.textContent = '❌ Mauvais ordre ! Réessaie...';
+                    setTimeout(() => {
+                        initPuzzle();
+                        message.textContent = 'Clique sur les coeurs dans l\'ordre ❤️';
+                    }, 1500);
+                }
+            } else {
+                message.textContent = `Coeur ${userSequence.length}/4 trouvé ! 💕`;
+            }
+        }
+
+        // Bouton "Non" qui fuit
+        function runAway(event) {
+            event.preventDefault();
+            const noBtn = document.getElementById('noBtn');
+            const container = document.querySelector('.buttons-container');
+            const containerRect = container.getBoundingClientRect();
+            
+            noClickCount++;
+            
+            // Calculer une nouvelle position aléatoire
+            const maxX = containerRect.width - noBtn.offsetWidth;
+            const maxY = containerRect.height - noBtn.offsetHeight;
+            
+            const newX = Math.random() * maxX;
+            const newY = Math.random() * maxY;
+            
+            noBtn.style.position = 'absolute';
+            noBtn.style.left = newX + 'px';
+            noBtn.style.top = newY + 'px';
+            
+            // Agrandir le bouton OUI
+            yesButtonScale += 0.15;
+            const yesBtn = document.getElementById('yesBtn');
+            yesBtn.style.transform = `translateX(-150px) scale(${yesButtonScale})`;
+            
+            // Message d'insistance
+            const message = document.getElementById('insistenceMessage');
+            const messageIndex = Math.min(noClickCount - 1, insistenceMessages.length - 1);
+            message.textContent = insistenceMessages[messageIndex];
+            message.style.animation = 'none';
+            setTimeout(() => {
+                message.style.animation = 'fadeIn 0.5s';
+            }, 10);
+            
+            // Cacher après plusieurs tentatives
+            if (noClickCount >= 10) {
+                noBtn.style.opacity = '0';
+                noBtn.style.pointerEvents = 'none';
+            }
+        }
+
+        // Dire OUI
+        function sayYes() {
+            switchScreen('questionScreen', 'successScreen');
+            changeBackground('bg-success');
+            createConfetti();
+        }
+
+        // Afficher la boîte de tirage
+        function showWheel() {
+            switchScreen('successScreen', 'wheelScreen');
+        }
+
+        let drawing = false;
+        let messagesRevealed = 0;
+        let currentCard = null;
+
+        function drawMessage() {
+            if (drawing) return;
+            
+            drawing = true;
+            const button = document.getElementById('drawButton');
+            const lid = document.getElementById('boxLid');
+            const slot = document.getElementById('boxSlot');
+            
+            button.disabled = true;
+            
+            // Ouvrir le couvercle
+            lid.classList.add('open');
+            
+            // Supprimer l'ancien message si présent
+            if (currentCard) {
+                currentCard.remove();
+            }
+            
+            setTimeout(() => {
+                // Choisir un message aléatoire
+                const randomIndex = Math.floor(Math.random() * wheelMessages.length);
+                const message = wheelMessages[randomIndex];
+                
+                // Créer une carte de message
+                const card = document.createElement('div');
+                card.className = 'message-card';
+                card.innerHTML = `
+                    <div class="message-card-icon">💝</div>
+                    <div class="message-card-text">${message}</div>
+                `;
+                
+                slot.innerHTML = '';
+                slot.appendChild(card);
+                currentCard = card;
+                
+                // Animation de révélation
+                setTimeout(() => {
+                    card.classList.add('reveal');
+                    
+                    // Afficher le popup après l'animation
+                    setTimeout(() => {
+                        messagesRevealed++;
+                        showMessagePopup(message, messagesRevealed);
+                        
+                        // Mettre à jour le compteur
+                        const counter = document.getElementById('drawCounter');
+                        counter.textContent = `${messagesRevealed} message${messagesRevealed > 1 ? 's' : ''} tiré${messagesRevealed > 1 ? 's' : ''} sur 8`;
+                        
+                        // Afficher le bouton cadeau après 5 messages
+                        if (messagesRevealed >= 5) {
+                            document.getElementById('giftButton').style.display = 'inline-block';
+                            document.getElementById('giftButton').style.animation = 'fadeInScale 0.5s ease-out';
+                        }
+                        
+                        // Fermer le couvercle
+                        lid.classList.remove('open');
+                        drawing = false;
+                        button.disabled = false;
+                    }, 1000);
+                }, 100);
+            }, 600);
+        }
+
+        // Afficher le popup de message
+        function showMessagePopup(message, count) {
+            const popup = document.getElementById('messagePopup');
+            const overlay = document.getElementById('popupOverlay');
+            const popupMessage = document.getElementById('popupMessage');
+            const popupCounter = document.getElementById('popupCounter');
+            
+            popupMessage.textContent = message;
+            popupCounter.textContent = `Message ${count}/8 révélé 💕`;
+            
+            overlay.classList.add('show');
+            popup.classList.add('show');
+        }
+
+        // Fermer le popup
+        function closePopup() {
+            const popup = document.getElementById('messagePopup');
+            const overlay = document.getElementById('popupOverlay');
+            
+            overlay.classList.remove('show');
+            popup.classList.remove('show');
+        }
+
+        // Afficher le ticket
+        function showTicket() {
+            console.log('Affichage du ticket...');
+            switchScreen('wheelScreen', 'ticketScreen');
+            createConfetti();
+        }
+
+        // Changer d'écran
+        function switchScreen(fromId, toId) {
+            console.log('Changement d\'écran:', fromId, '->', toId);
+            const fromScreen = document.getElementById(fromId);
+            const toScreen = document.getElementById(toId);
+            
+            if (fromScreen) fromScreen.classList.remove('active');
+            if (toScreen) toScreen.classList.add('active');
+        }
+
+        // Créer des confettis
+        function createConfetti() {
+            const colors = ['#ff1744', '#ff6b9d', '#ffc3d7', '#4caf50', '#81c784', '#ffeb3b', '#11998e', '#38ef7d'];
+            
+            for (let i = 0; i < 150; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.classList.add('confetti');
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 2 + 's';
+                    confetti.style.width = (Math.random() * 15 + 5) + 'px';
+                    confetti.style.height = confetti.style.width;
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 20);
+            }
+        }
+
+        // Initialisation
+        window.onload = function() {
+            createBackgroundParticles();
+            console.log('Site initialisé avec succès !');
+        };
+    </script>
+</body>
+</html>
